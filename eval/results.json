@@ -1,0 +1,487 @@
+{
+  "generatedAt": "2026-10-17T06:51:02.885Z",
+  "model": "glm-4-air",
+  "provider": "智谱 GLM",
+  "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+  "temperature": 0,
+  "promptVersion": "v2-evidence-checked",
+  "question": {
+    "title": "酶的特性与温度的影响",
+    "subject": "高中生物",
+    "prompt": "请说明酶在细胞代谢中表现出的三个特性，并解释高温与低温对酶活性影响的本质区别。",
+    "maxScore": 10,
+    "rubric": [
+      {
+        "id": "c1",
+        "name": "高效性",
+        "points": 2,
+        "description": "指出酶的催化效率远高于无机催化剂（或能显著降低活化能）"
+      },
+      {
+        "id": "c2",
+        "name": "专一性",
+        "points": 2,
+        "description": "指出一种酶只能催化一种或一类化学反应"
+      },
+      {
+        "id": "c3",
+        "name": "作用条件温和",
+        "points": 2,
+        "description": "指出酶需要适宜的温度和 pH 才能保持活性"
+      },
+      {
+        "id": "c4",
+        "name": "高温使酶变性失活",
+        "points": 2,
+        "description": "高温破坏酶（蛋白质）的空间结构，失活不可逆"
+      },
+      {
+        "id": "c5",
+        "name": "低温抑制但不破坏结构",
+        "points": 2,
+        "description": "低温只降低酶活性，空间结构未破坏，回温后活性可恢复"
+      }
+    ]
+  },
+  "samples": [
+    {
+      "tag": "A1",
+      "studentName": "林小满",
+      "answer": "酶在细胞代谢中有三个特性。第一是高效性，酶的催化效率远高于无机催化剂，能显著降低化学反应的活化能；第二是专一性，一种酶只能催化一种或一类化学反应，比如淀粉酶只能水解淀粉，不能水解蛋白质；第三是作用条件较温和，酶需要适宜的温度和 pH 才能保持较高的活性。高温会破坏酶分子的空间结构，使酶发生不可逆的变性而永久失活；低温则只是抑制酶的活性，酶的空间结构并没有被破坏，温度回升后活性可以恢复。",
+      "answerPreview": "酶在细胞代谢中有三个特性。第一是高效性，酶的催化效率远高于无机催化剂…",
+      "humanScore": 10,
+      "humanCriteria": {
+        "c1": 2,
+        "c2": 2,
+        "c3": 2,
+        "c4": 2,
+        "c5": 2
+      },
+      "humanNote": "三个特性表述准确，高温变性不可逆、低温仅抑制且可恢复，完全命中。",
+      "aiScore": 10,
+      "diff": 0,
+      "aiLatencyMs": 3811,
+      "wallMs": 3834,
+      "aiTokens": 1333,
+      "model": "glm-4-air",
+      "summary": "答案完整准确，所有要点均正确表述",
+      "criteria": [
+        {
+          "id": "c1",
+          "name": "高效性",
+          "points": 2,
+          "ai": 2,
+          "human": 2,
+          "evidence": "酶的催化效率远高于无机催化剂，能显著降低化学反应的活化能",
+          "reason": "完整指出酶高效性的核心机制"
+        },
+        {
+          "id": "c2",
+          "name": "专一性",
+          "points": 2,
+          "ai": 2,
+          "human": 2,
+          "evidence": "一种酶只能催化一种或一类化学反应，比如淀粉酶只能水解淀粉，不能水解蛋白质",
+          "reason": "明确说明酶的专一性并举例"
+        },
+        {
+          "id": "c3",
+          "name": "作用条件温和",
+          "points": 2,
+          "ai": 2,
+          "human": 2,
+          "evidence": "酶需要适宜的温度和 pH 才能保持较高的活性",
+          "reason": "指出酶作用条件温和的关键要求"
+        },
+        {
+          "id": "c4",
+          "name": "高温使酶变性失活",
+          "points": 2,
+          "ai": 2,
+          "human": 2,
+          "evidence": "高温会破坏酶分子的空间结构，使酶发生不可逆的变性而永久失活",
+          "reason": "准确描述高温使酶变性失活的机制"
+        },
+        {
+          "id": "c5",
+          "name": "低温抑制但不破坏结构",
+          "points": 2,
+          "ai": 2,
+          "human": 2,
+          "evidence": "低温则只是抑制酶的活性，酶的空间结构并没有被破坏，温度回升后活性可以恢复",
+          "reason": "正确说明低温对酶活性的影响"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "tag": "A2",
+      "studentName": "周予安",
+      "answer": "酶具有高效性，催化效率比无机催化剂高很多；也具有专一性，一种酶只催化一种或一类底物；酶的作用条件比较温和，一般在适宜温度下活性最高。高温会让酶变性，蛋白质的空间结构被破坏，而且这种破坏是不可逆的。低温下酶活性很低，温度升高以后活性会好一些。",
+      "answerPreview": "酶具有高效性，催化效率比无机催化剂高很多；也具有专一性，一种酶只催化…",
+      "humanScore": 8.5,
+      "humanCriteria": {
+        "c1": 2,
+        "c2": 2,
+        "c3": 1.5,
+        "c4": 2,
+        "c5": 1
+      },
+      "humanNote": "未提 pH，条件温和给 1.5；低温只说了活性低、升温好转，没点明空间结构未破坏，给 1 分。",
+      "aiScore": 9,
+      "diff": 0.5,
+      "aiLatencyMs": 3714,
+      "wallMs": 3745,
+      "aiTokens": 1312,
+      "model": "glm-4-air",
+      "summary": "基本掌握酶的特性及温度影响，但对低温影响的本质表述不够准确。",
+      "criteria": [
+        {
+          "id": "c1",
+          "name": "高效性",
+          "points": 2,
+          "ai": 2,
+          "human": 2,
+          "evidence": "酶具有高效性，催化效率比无机催化剂高很多",
+          "reason": "明确指出酶的催化效率远高于无机催化剂"
+        },
+        {
+          "id": "c2",
+          "name": "专一性",
+          "points": 2,
+          "ai": 2,
+          "human": 2,
+          "evidence": "也具有专一性，一种酶只催化一种或一类底物",
+          "reason": "明确指出一种酶只催化一种或一类化学反应"
+        },
+        {
+          "id": "c3",
+          "name": "作用条件温和",
+          "points": 2,
+          "ai": 2,
+          "human": 1.5,
+          "evidence": "酶的作用条件比较温和，一般在适宜温度下活性最高",
+          "reason": "指出酶需要适宜的温度才能保持活性"
+        },
+        {
+          "id": "c4",
+          "name": "高温使酶变性失活",
+          "points": 2,
+          "ai": 2,
+          "human": 2,
+          "evidence": "高温会让酶变性，蛋白质的空间结构被破坏，而且这种破坏是不可逆的",
+          "reason": "明确指出高温破坏酶的空间结构且失活不可逆"
+        },
+        {
+          "id": "c5",
+          "name": "低温抑制但不破坏结构",
+          "points": 2,
+          "ai": 1,
+          "human": 1,
+          "evidence": "低温下酶活性很低，温度升高以后活性会好一些",
+          "reason": "提到低温抑制酶活性，但未明确说明空间结构未破坏"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "tag": "A3",
+      "studentName": "陈知遥",
+      "answer": "酶的第一个特性是高效性，它的催化效率比无机催化剂高得多；第二个特性是专一性，每种酶只能催化特定的一种或一类反应；第三个特性是酶的作用需要适宜的条件，温度过高或 pH 不适宜都会让酶失去活性。高温会使酶的空间结构被破坏而失活，这种失活是不可逆的。",
+      "answerPreview": "酶的第一个特性是高效性，它的催化效率比无机催化剂高得多；第二个特性是…",
+      "humanScore": 7.5,
+      "humanCriteria": {
+        "c1": 2,
+        "c2": 2,
+        "c3": 2,
+        "c4": 1.5,
+        "c5": 0
+      },
+      "humanNote": "三个特性都对，高温只说了失活没强调不可逆，给 1.5；完全没答低温，0 分。",
+      "aiScore": 6,
+      "diff": -1.5,
+      "aiLatencyMs": 3627,
+      "wallMs": 3651,
+      "aiTokens": 1307,
+      "model": "glm-4-air",
+      "summary": "答对酶的三个特性及高温影响，但未解释低温影响",
+      "criteria": [
+        {
+          "id": "c1",
+          "name": "高效性",
+          "points": 2,
+          "ai": 1,
+          "human": 2,
+          "evidence": "酶的第一个特性是高效性，它的催化效率比无机催化剂高得多",
+          "reason": "提到高效性及催化效率高，但未提及降低活化能"
+        },
+        {
+          "id": "c2",
+          "name": "专一性",
+          "points": 2,
+          "ai": 2,
+          "human": 2,
+          "evidence": "第二个特性是专一性，每种酶只能催化特定的一种或一类反应",
+          "reason": "完整表述了专一性的定义"
+        },
+        {
+          "id": "c3",
+          "name": "作用条件温和",
+          "points": 2,
+          "ai": 1,
+          "human": 2,
+          "evidence": "第三个特性是酶的作用需要适宜的条件，温度过高或 pH 不适宜都会让酶失去活性",
+          "reason": "提到适宜条件但未明确说明温度和pH"
+        },
+        {
+          "id": "c4",
+          "name": "高温使酶变性失活",
+          "points": 2,
+          "ai": 2,
+          "human": 1.5,
+          "evidence": "高温会使酶的空间结构被破坏而失活，这种失活是不可逆的",
+          "reason": "完整表述了高温使酶变性失活的本质"
+        },
+        {
+          "id": "c5",
+          "name": "低温抑制但不破坏结构",
+          "points": 2,
+          "ai": 0,
+          "human": 0,
+          "evidence": "",
+          "reason": "未提及低温对酶活性的影响"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "tag": "A4",
+      "studentName": "何一诺",
+      "answer": "酶能催化很多种反应，效率比普通的催化剂要高。酶的作用条件比较温和，温度太高的话酶就会死掉，不能再工作了。低温的时候酶只是不太活跃。",
+      "answerPreview": "酶能催化很多种反应，效率比普通的催化剂要高。酶的作用条件比较温和，温…",
+      "humanScore": 4,
+      "humanCriteria": {
+        "c1": 1,
+        "c2": 0.5,
+        "c3": 1,
+        "c4": 1,
+        "c5": 0.5
+      },
+      "humanNote": "高效性只给了结论没有比较依据，1 分；专一性说反了（能催化很多种），0.5；条件温和未提 pH，1 分；高温用「死掉」表达出失活但没提结构，1 分；低温只说不太活跃，0.5。",
+      "aiScore": 4,
+      "diff": 0,
+      "aiLatencyMs": 3456,
+      "wallMs": 3470,
+      "aiTokens": 1250,
+      "model": "glm-4-air",
+      "summary": "基本掌握酶的特性，但缺乏专一性，对高温低温影响机制描述不够准确。",
+      "criteria": [
+        {
+          "id": "c1",
+          "name": "高效性",
+          "points": 2,
+          "ai": 1,
+          "human": 1,
+          "evidence": "酶能催化很多种反应，效率比普通的催化剂要高",
+          "reason": "提到酶的高效性，但未说明降低活化能"
+        },
+        {
+          "id": "c2",
+          "name": "专一性",
+          "points": 2,
+          "ai": 0,
+          "human": 0.5,
+          "evidence": "",
+          "reason": "未提及酶的专一性"
+        },
+        {
+          "id": "c3",
+          "name": "作用条件温和",
+          "points": 2,
+          "ai": 1,
+          "human": 1,
+          "evidence": "酶的作用条件比较温和",
+          "reason": "提到作用条件温和，但未提及pH"
+        },
+        {
+          "id": "c4",
+          "name": "高温使酶变性失活",
+          "points": 2,
+          "ai": 1,
+          "human": 1,
+          "evidence": "温度太高的话酶就会死掉，不能再工作了",
+          "reason": "提到高温使酶失活，但未说明空间结构破坏和不可逆"
+        },
+        {
+          "id": "c5",
+          "name": "低温抑制但不破坏结构",
+          "points": 2,
+          "ai": 1,
+          "human": 0.5,
+          "evidence": "低温的时候酶只是不太活跃",
+          "reason": "提到低温抑制酶活性，暗示可恢复"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "tag": "A5",
+      "studentName": "苏行",
+      "answer": "酶有高效性和专一性，一种酶只能催化一种反应。酶的催化需要合适的温度。高温只会让酶的活性降低，等温度降下来就能恢复；低温会把酶的结构破坏掉，让酶永久失活。",
+      "answerPreview": "酶有高效性和专一性，一种酶只能催化一种反应。酶的催化需要合适的温度。…",
+      "humanScore": 2,
+      "humanCriteria": {
+        "c1": 0.5,
+        "c2": 1,
+        "c3": 0.5,
+        "c4": 0,
+        "c5": 0
+      },
+      "humanNote": "只提「高效性」三个字没有解释，0.5；专一性正确但简略，1 分；条件只提温度、没说 pH，0.5；高温低温的机理完全说反，c4、c5 均 0。",
+      "aiScore": 4,
+      "diff": 2,
+      "aiLatencyMs": 2640,
+      "wallMs": 2671,
+      "aiTokens": 1230,
+      "model": "glm-4-air",
+      "summary": "答对专一性，但高温低温影响表述错误",
+      "criteria": [
+        {
+          "id": "c1",
+          "name": "高效性",
+          "points": 2,
+          "ai": 1,
+          "human": 0.5,
+          "evidence": "酶有高效性和专一性",
+          "reason": "提到高效性但未说明高效的具体表现"
+        },
+        {
+          "id": "c2",
+          "name": "专一性",
+          "points": 2,
+          "ai": 2,
+          "human": 1,
+          "evidence": "一种酶只能催化一种反应",
+          "reason": "准确表述了酶的专一性"
+        },
+        {
+          "id": "c3",
+          "name": "作用条件温和",
+          "points": 2,
+          "ai": 1,
+          "human": 0.5,
+          "evidence": "酶的催化需要合适的温度",
+          "reason": "提到温度条件但未提及pH条件"
+        },
+        {
+          "id": "c4",
+          "name": "高温使酶变性失活",
+          "points": 2,
+          "ai": 0,
+          "human": 0,
+          "evidence": "",
+          "reason": "未提及高温使酶变性失"
+        },
+        {
+          "id": "c5",
+          "name": "低温抑制但不破坏结构",
+          "points": 2,
+          "ai": 0,
+          "human": 0,
+          "evidence": "",
+          "reason": "将高温低温影响说反"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "tag": "A6",
+      "studentName": "许未",
+      "answer": "不会，忘了。",
+      "answerPreview": "不会，忘了。",
+      "humanScore": 0,
+      "humanCriteria": {
+        "c1": 0,
+        "c2": 0,
+        "c3": 0,
+        "c4": 0,
+        "c5": 0
+      },
+      "humanNote": "未作答，全部 0 分。",
+      "aiScore": 0,
+      "diff": 0,
+      "aiLatencyMs": 2095,
+      "wallMs": 2119,
+      "aiTokens": 1129,
+      "model": "glm-4-air",
+      "summary": "答案空白，未回答任何问题",
+      "criteria": [
+        {
+          "id": "c1",
+          "name": "高效性",
+          "points": 2,
+          "ai": 0,
+          "human": 0,
+          "evidence": "",
+          "reason": "未提及酶的高效性"
+        },
+        {
+          "id": "c2",
+          "name": "专一性",
+          "points": 2,
+          "ai": 0,
+          "human": 0,
+          "evidence": "",
+          "reason": "未提及酶的专一性"
+        },
+        {
+          "id": "c3",
+          "name": "作用条件温和",
+          "points": 2,
+          "ai": 0,
+          "human": 0,
+          "evidence": "",
+          "reason": "未提及酶的作用条件温和"
+        },
+        {
+          "id": "c4",
+          "name": "高温使酶变性失活",
+          "points": 2,
+          "ai": 0,
+          "human": 0,
+          "evidence": "",
+          "reason": "未提及高温对酶的影响"
+        },
+        {
+          "id": "c5",
+          "name": "低温抑制但不破坏结构",
+          "points": 2,
+          "ai": 0,
+          "human": 0,
+          "evidence": "",
+          "reason": "未提及低温对酶的影响"
+        }
+      ],
+      "warnings": []
+    }
+  ],
+  "metrics": {
+    "n": 6,
+    "mae": 0.67,
+    "rmse": 1.04,
+    "exact": 3,
+    "exactRate": 0.5,
+    "within1": 4,
+    "within1Rate": 0.667,
+    "maxAbsDiff": 2,
+    "pearson": 0.959,
+    "avgAiLatencyMs": 3224,
+    "medianAiLatencyMs": 3627,
+    "totalAiMs": 19343,
+    "avgHumanSeconds": null,
+    "speedup": null,
+    "criterionMae": 0.2,
+    "criterionCount": 30
+  },
+  "humanTiming": null
+}

@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>批阅 · AI 判分系统</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23a8322b'/><text x='32' y='45' font-size='38' text-anchor='middle' fill='%23fffdf8' font-family='serif'>批</text></svg>" />
+</head>
+<body>
+  <div class="app">
+    <aside class="rail">
+      <a class="brand" href="#/create">
+        <span class="seal">批</span>
+        <span class="brand-text">
+          <strong>批阅</strong>
+          <em>AI GRADING DESK</em>
+        </span>
+      </a>
+
+      <nav class="nav">
+        <a href="#/create" data-nav="create">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20h4l10-10a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5 17.5 10.5"/></svg>
+          <span>出题台</span><i>教师</i>
+        </a>
+        <a href="#/submit" data-nav="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 3 10.5 13.5"/><path d="M21 3l-7 18-3.5-7.5L3 10l18-7Z"/></svg>
+          <span>学生作答</span><i>学生</i>
+        </a>
+        <a href="#/review" data-nav="review">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.5 12 2.4 2.4 4.6-4.8"/></svg>
+          <span>批改台</span><i>教师</i>
+        </a>
+        <a href="#/eval" data-nav="eval">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+          <span>评测报告</span><i>数据</i>
+        </a>
+      </nav>
+
+      <div class="rail-foot">
+        <div class="model-chip" id="modelChip">
+          <span class="dot"></span>
+          <div><b>连接中…</b><small>读取配置</small></div>
+        </div>
+        <p class="rail-note">Key 只存在本机 <code>.env</code>，不进代码库。</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="page-head">
+        <div>
+          <p class="eyebrow" id="pageEyebrow">TEACHER · 出题</p>
+          <h1 id="pageTitle">出题台</h1>
+          <p class="page-sub" id="pageSub">写清题干与评分标准，AI 才有可对照的尺子。</p>
+        </div>
+        <div class="head-actions" id="headActions"></div>
+      </header>
+
+      <!-- 出题台 -->
+      <section class="view" id="view-create">
+        <div class="grid-2">
+          <form class="card" id="questionForm" autocomplete="off">
+            <div class="card-head">
+              <h2>新题目</h2>
+              <span class="hint">评分标准越具体，AI 越稳定</span>
+            </div>
+
+            <div class="row-2">
+              <label class="field">
+                <span>题目名称</span>
+                <input name="title" placeholder="例：酶的特性与温度的影响" />
+              </label>
+              <label class="field">
+                <span>学科</span>
+                <input name="subject" placeholder="例：高中生物" />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>题干</span>
+              <textarea name="prompt" rows="4" placeholder="把学生看到的题目原文写在这里…"></textarea>
+            </label>
+
+            <div class="rubric-head">
+              <div>
+                <h3>评分标准</h3>
+                <p class="hint">每条要点独立给分，AI 会逐条对照并引用原文</p>
+              </div>
+              <div class="total-pill">满分 <b id="rubricTotal">0</b></div>
+            </div>
+
+            <div class="rubric-rows" id="rubricRows"></div>
+
+            <button type="button" class="btn ghost wide" id="addCriterion">＋ 添加评分要点</button>
+
+            <div class="form-foot">
+              <span class="hint">总分 = 各条分值之和</span>
+              <button class="btn primary" type="submit">保存题目</button>
+            </div>
+          </form>
+
+          <aside class="card list-card">
+            <div class="card-head">
+              <h2>题库</h2>
+              <span class="count" id="qCount">0</span>
+            </div>
+            <div class="q-list" id="questionList"></div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- 学生作答 -->
+      <section class="view" id="view-submit" hidden>
+        <div class="grid-submit">
+          <div class="card">
+            <div class="card-head">
+              <h2>作答纸</h2>
+              <span class="hint">提交后立即判分</span>
+            </div>
+
+            <label class="field">
+              <span>选择题目</span>
+              <select id="submitQuestion"></select>
+            </label>
+
+            <div class="prompt-preview" id="promptPreview">
+              <p class="muted">还没有题目，先去出题台写一道。</p>
+            </div>
+
+            <div class="row-2">
+              <label class="field">
+                <span>学生姓名</span>
+                <input id="studentName" placeholder="例：林小满" />
+              </label>
+              <div class="field">
+                <span>答案字数</span>
+                <div class="char-count" id="charCount">0 字</div>
+              </div>
+            </div>
+
+            <label class="field">
+              <span>你的答案</span>
+              <textarea id="studentAnswer" rows="9" placeholder="在这里作答。可以故意换一种写法，看看 AI 的分数会不会变。"></textarea>
+            </label>
+
+            <div class="form-foot">
+              <span class="hint">AI 判分约需 5–20 秒</span>
+              <button class="btn primary" id="submitAnswer">提交并判分</button>
+            </div>
+          </div>
+
+          <div class="card result-card is-empty" id="gradeResult">
+            <div class="empty-state">
+              <div class="empty-mark">卷</div>
+              <p>提交答案后，<br />这里会出现分数与逐条理由。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 批改台 -->
+      <section class="view" id="view-review" hidden>
+        <div class="review-layout">
+          <aside class="card review-list">
+            <div class="card-head">
+              <h2>答卷</h2>
+              <span class="count" id="subCount">0</span>
+            </div>
+            <div class="sub-list" id="submissionList"></div>
+          </aside>
+          <div class="card review-detail" id="reviewDetail">
+            <div class="empty-state">
+              <div class="empty-mark">阅</div>
+              <p>左边选一份答卷，查看 AI 的逐条给分，<br />改分确认后写入最终成绩。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 评测报告 -->
+      <section class="view" id="view-eval" hidden>
+        <div id="evalBody"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

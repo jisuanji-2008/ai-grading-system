@@ -1,0 +1,22 @@
+{
+  "name": "ai-grading-system",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AI 判分系统：教师出题与评分标准，学生提交答案，AI 逐条给分并说明理由，教师复核改分",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch server/index.js",
+    "eval": "node --disable-warning=ExperimentalWarning scripts/evaluate.mjs",
+    "timer": "node scripts/human-timer.mjs",
+    "report": "node --disable-warning=ExperimentalWarning scripts/evaluate.mjs --report-only",
+    "check": "node --disable-warning=ExperimentalWarning scripts/check-key.mjs"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  }
+}

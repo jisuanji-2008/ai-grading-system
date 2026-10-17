@@ -1,0 +1,19 @@
+# 密钥与本地配置：绝不进版本库
+.env
+.env.local
+.env.*.local
+
+# 依赖
+node_modules/
+
+# 本地数据与评测产物
+data/*.sqlite
+data/*.sqlite-*
+eval/*.sqlite
+eval/*.sqlite-*
+eval/last-run.json
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.log
