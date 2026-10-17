@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import express from 'express';
 import { config, publicMeta } from './config.js';
 import {
@@ -22,6 +24,8 @@ import { gradeAnswer } from './grader.js';
 const app = express();
 app.disable('x-powered-by');
 app.use(express.json({ limit: '2mb' }));
+
+const execFileAsync = promisify(execFile);
 
 const asyncRoute = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
@@ -171,6 +175,104 @@ app.get('/api/eval', (req, res) => {
   if (!fs.existsSync(file)) return res.json({ available: false });
   res.json({ available: true, ...JSON.parse(fs.readFileSync(file, 'utf8')) });
 });
+
+// ── 人工计时（网页版人工批改，供评测对比耗时） ────────────
+const FIXTURE_FILE = path.join(config.root, 'eval', 'answers.json');
+const TIMING_FILE = path.join(config.root, 'eval', 'human-timing.json');
+
+app.get('/api/timer', (req, res) => {
+  if (!fs.existsSync(FIXTURE_FILE)) return res.json({ available: false });
+  const fixture = JSON.parse(fs.readFileSync(FIXTURE_FILE, 'utf8'));
+  const existing = fs.existsSync(TIMING_FILE) ? JSON.parse(fs.readFileSync(TIMING_FILE, 'utf8')) : null;
+
+  // 只给出题目与答案，不透出 AI 分数与人工基准分，避免影响评阅人判断
+  res.json({
+    available: true,
+    question: fixture.question,
+    answers: fixture.answers.map((a) => ({
+      tag: a.tag,
+      studentName: a.studentName,
+      answer: a.answer,
+      approved: Boolean(a.approved),
+    })),
+    recorded: existing
+      ? {
+          reviewer: existing.reviewer,
+          recordedAt: existing.recordedAt,
+          avgSeconds: existing.avgSeconds,
+          count: Object.keys(existing.perAnswer || {}).length,
+        }
+      : null,
+  });
+});
+
+app.post(
+  '/api/human-timing',
+  asyncRoute(async (req, res) => {
+    if (!fs.existsSync(FIXTURE_FILE)) throw httpError(404, '找不到评测题包 eval/answers.json');
+    const fixture = JSON.parse(fs.readFileSync(FIXTURE_FILE, 'utf8'));
+    const validTags = new Set(fixture.answers.map((a) => a.tag));
+    const maxScore = fixture.question.maxScore;
+
+    const perAnswer = {};
+    const scores = {};
+    const notes = {};
+    for (const [tag, raw] of Object.entries(req.body?.perAnswer || {})) {
+      if (!validTags.has(tag)) continue;
+      const sec = Number(raw);
+      if (!Number.isFinite(sec) || sec <= 0 || sec > 3600) {
+        throw httpError(400, `「${tag}」的计时不合法`);
+      }
+      perAnswer[tag] = Math.round(sec * 10) / 10;
+    }
+    for (const [tag, raw] of Object.entries(req.body?.scores || {})) {
+      if (!validTags.has(tag)) continue;
+      const v = Number(raw);
+      if (!Number.isFinite(v) || v < 0 || v > maxScore) {
+        throw httpError(400, `「${tag}」的分数需在 0 ~ ${maxScore} 之间`);
+      }
+      scores[tag] = Math.round(v * 2) / 2;
+    }
+    for (const [tag, raw] of Object.entries(req.body?.notes || {})) {
+      if (!validTags.has(tag)) continue;
+      const note = String(raw || '').trim();
+      if (note) notes[tag] = note.slice(0, 200);
+    }
+
+    const values = Object.values(perAnswer);
+    if (values.length === 0) throw httpError(400, '没有记录到任何一份的用时');
+
+    const out = {
+      reviewer: String(req.body?.reviewer || '').trim() || '未署名',
+      recordedAt: new Date().toISOString(),
+      source: 'web',
+      perAnswer,
+      scores,
+      notes,
+      avgSeconds: Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(1)),
+    };
+    fs.writeFileSync(TIMING_FILE, JSON.stringify(out, null, 2));
+
+    // 立刻重算报告：只并入人工耗时，不重新调用模型
+    let regenerated = false;
+    try {
+      await execFileAsync(process.execPath, ['--disable-warning=ExperimentalWarning', 'scripts/evaluate.mjs', '--report-only'], {
+        cwd: config.root,
+        timeout: 60_000,
+      });
+      regenerated = true;
+    } catch (err) {
+      console.warn('[timer] 报告重算失败：' + err.message);
+    }
+
+    const resultsFile = path.join(config.root, 'eval', 'results.json');
+    const metrics = regenerated && fs.existsSync(resultsFile)
+      ? JSON.parse(fs.readFileSync(resultsFile, 'utf8')).metrics
+      : null;
+
+    res.json({ ok: true, timing: out, reportRegenerated: regenerated, metrics });
+  })
+);
 
 // ── 静态资源 ──────────────────────────────────────────────
 const publicDir = path.join(config.root, 'public');

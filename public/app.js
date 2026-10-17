@@ -33,6 +33,11 @@ const VIEWS = {
     title: '评测报告',
     sub: '同一道题、同一套标准：AI 分与人分差多少，各自花了多久。',
   },
+  timer: {
+    eyebrow: 'BASELINE · 人工',
+    title: '人工计时',
+    sub: '同一位评阅人、同一套标准批一遍，量出人工基准的用时。',
+  },
 };
 
 /* ── 基础工具 ─────────────────────────────── */
@@ -118,6 +123,7 @@ function route() {
   const raw = (location.hash || '#/create').replace(/^#\//, '');
   const view = VIEWS[raw] ? raw : 'create';
   state.view = view;
+  if (view !== 'timer') stopTick();
 
   $$('.view').forEach((el) => (el.hidden = el.id !== `view-${view}`));
   $$('[data-nav]').forEach((a) => a.classList.toggle('active', a.dataset.nav === view));
@@ -134,6 +140,7 @@ function route() {
   }
   if (view === 'review') loadSubmissions();
   if (view === 'eval') loadEval();
+  if (view === 'timer') loadTimer();
   if (view === 'create') renderQuestionList();
 }
 
@@ -147,6 +154,8 @@ function renderHeadActions() {
       : `<span class="pill failed">缺少 API Key</span>`;
   } else if (state.view === 'review') {
     el.innerHTML = `<button class="btn ghost" id="refreshSubs">刷新答卷</button>`;
+  } else if (state.view === 'timer') {
+    el.innerHTML = `<span class="pill">人工基准</span>`;
   } else {
     el.innerHTML = `<span class="pill">AI vs 人工</span>`;
   }
@@ -700,7 +709,11 @@ npm run eval</pre>
       <div class="metric">
         <div class="k">人工平均耗时</div>
         <div class="v">${m.avgHumanSeconds ? fmt(m.avgHumanSeconds, 1) : '—'}<small>秒/份</small></div>
-        <div class="d">逐份阅读、打分、写评语的实测用时${m.speedup ? ` · AI 快 ${fmt(m.speedup)} 倍` : ''}</div>
+        <div class="d">逐份阅读、打分、写评语的实测用时${m.speedup ? ` · AI 快 ${fmt(m.speedup)} 倍` : ''}${
+          m.avgHumanSeconds
+            ? ''
+            : ' · <a href="#/timer" style="color:var(--accent);text-decoration:none;border-bottom:1px solid currentColor">去人工计时页实测 →</a>'
+        }</div>
       </div>
     </div>
 
@@ -894,6 +907,287 @@ function bindGlobal() {
     state.currentSubId = go.dataset.gotoReview;
     location.hash = '#/review';
   });
+}
+
+/* ── 人工计时（网页版人工批改，产出评测对比用的耗时基准） ── */
+const timerState = {
+  data: null,
+  phase: 'loading', // loading | intro | running | done
+  index: 0,
+  perAnswer: {},
+  scores: {},
+  notes: {},
+  startedAt: 0,
+  tick: null,
+  reviewer: '',
+  saved: null,
+  saving: false,
+};
+
+function stopTick() {
+  if (timerState.tick) {
+    clearInterval(timerState.tick);
+    timerState.tick = null;
+  }
+}
+
+async function loadTimer() {
+  const box = $('#timerBody');
+  stopTick();
+  box.innerHTML = `<div class="loading-box"><div class="loader"></div><p>读取评测题包…</p></div>`;
+  try {
+    timerState.data = await api('/api/timer');
+  } catch (err) {
+    box.innerHTML = `<div class="error-box">${escapeHtml(err.message)}</div>`;
+    return;
+  }
+  if (!timerState.data.available) {
+    box.innerHTML = `
+      <div class="card" style="text-align:center;padding:56px 30px">
+        <div class="empty-mark" style="margin-bottom:18px">测</div>
+        <h2 style="font-size:16px;margin-bottom:10px">找不到评测题包</h2>
+        <p class="prose" style="max-width:520px;margin:0 auto">需要 <code>eval/answers.json</code>（6 份答案 + 评分标准）才能量人工基准。</p>
+      </div>`;
+    return;
+  }
+  if (timerState.phase !== 'running') timerState.phase = 'intro';
+  renderTimer();
+}
+
+function renderTimer() {
+  const box = $('#timerBody');
+  const d = timerState.data;
+  if (!d) return;
+
+  if (timerState.phase === 'running') return renderTimerRunning(box, d);
+
+  if (timerState.phase === 'done') {
+    const tags = Object.keys(timerState.perAnswer);
+    const total = tags.reduce((s, t) => s + timerState.perAnswer[t], 0);
+    const avg = tags.length ? total / tags.length : 0;
+    const saved = timerState.saved;
+
+    box.innerHTML = `
+      <div class="eval-metrics" style="grid-template-columns:repeat(3,1fr)">
+        <div class="metric hi">
+          <div class="k">平均每份用时</div>
+          <div class="v">${fmt(avg, 1)}<small>秒</small></div>
+          <div class="d">${tags.length} 份合计 ${fmt(total, 1)} 秒</div>
+        </div>
+        <div class="metric">
+          <div class="k">最快 / 最慢</div>
+          <div class="v" style="font-size:22px">${fmt(Math.min(...tags.map((t) => timerState.perAnswer[t])), 1)} / ${fmt(Math.max(...tags.map((t) => timerState.perAnswer[t])), 1)}<small>秒</small></div>
+          <div class="d">同一人批同类答案的自然波动</div>
+        </div>
+        <div class="metric ok">
+          <div class="k">AI 平均耗时</div>
+          <div class="v">${saved?.metrics?.avgAiLatencyMs ? (saved.metrics.avgAiLatencyMs / 1000).toFixed(1) : '3.2'}<small>秒</small></div>
+          <div class="d">${saved?.metrics?.speedup ? `AI 快约 <b>${fmt(saved.metrics.speedup)} 倍</b>` : '写入报告后给出倍数'}</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>逐份用时</h2><span class="hint">评阅人：${escapeHtml(timerState.reviewer || '未署名')}</span></div>
+        <table class="table">
+          <thead>
+            <tr><th style="width:44px">#</th><th>答卷</th><th style="width:120px">你打的分数</th><th style="width:110px">用时</th><th>备注</th></tr>
+          </thead>
+          <tbody>
+            ${tags
+              .map(
+                (t, i) => `
+              <tr>
+                <td class="num" style="color:var(--ink-3)">${String(i + 1).padStart(2, '0')}</td>
+                <td class="name">${escapeHtml(d.answers.find((a) => a.tag === t)?.studentName || t)}</td>
+                <td class="num" style="color:var(--accent)">${fmt(timerState.scores[t])} <span style="color:var(--ink-3)">/ ${fmt(d.question.maxScore)}</span></td>
+                <td class="num">${fmt(timerState.perAnswer[t], 1)}s</td>
+                <td style="font-size:11.5px;color:var(--ink-2)">${escapeHtml(timerState.notes[t] || '—')}</td>
+              </tr>`
+              )
+              .join('')}
+          </tbody>
+        </table>
+        <div class="form-foot" style="margin-top:16px">
+          <span class="hint">${saved ? '已写入 eval/human-timing.json，报告已更新' : '写入后会重算评测报告（不重新调用模型，不花额度）'}</span>
+          <div style="display:flex;gap:10px">
+            <button class="btn ghost" id="tmReset">重来一遍</button>
+            <button class="btn primary" id="tmSave" ${saved || timerState.saving ? 'disabled' : ''}>${saved ? '已写入报告' : '写入评测报告'}</button>
+          </div>
+        </div>
+      </div>
+
+      ${
+        saved
+          ? `<div class="card" style="margin-top:18px"><div class="card-head"><h2>可以写进报告了</h2><span class="hint">数字来自实测</span></div>
+              <div class="prose">
+                <p>人工平均 <strong>${fmt(saved.timing.avgSeconds, 1)} 秒/份</strong>，
+                AI 平均 <strong>${saved.metrics ? (saved.metrics.avgAiLatencyMs / 1000).toFixed(1) : '3.2'} 秒/份</strong>${
+                  saved.metrics?.speedup ? `，AI 快约 <strong>${fmt(saved.metrics.speedup)} 倍</strong>` : ''
+                }。
+                <a href="#/eval" style="color:var(--accent);text-decoration:none;border-bottom:1px solid currentColor">去评测报告页看完整对比 →</a></p>
+              </div></div>`
+          : ''
+      }`;
+
+    $('#tmReset').addEventListener('click', () => {
+      Object.assign(timerState, { phase: 'intro', index: 0, perAnswer: {}, scores: {}, notes: {}, saved: null });
+      renderTimer();
+    });
+    const saveBtn = $('#tmSave');
+    if (saveBtn && !saved) saveBtn.addEventListener('click', saveTiming);
+    return;
+  }
+
+  // intro
+  const q = d.question;
+  const prev = d.recorded;
+  box.innerHTML = `
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h2>这次要批的题</h2><span class="hint">满分 ${fmt(q.maxScore)} 分</span></div>
+        <p class="prose" style="margin-bottom:16px">${escapeHtml(q.prompt)}</p>
+        <div class="sec-label">评分标准</div>
+        <div class="rubric-rows" style="margin-top:10px">
+          ${q.rubric
+            .map(
+              (c, i) => `
+            <div class="rubric-row" style="display:block">
+              <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:5px">
+                <b style="font-size:12.5px">${i + 1}. ${escapeHtml(c.name)}</b>
+                <span class="num" style="color:var(--accent);font-family:var(--mono);font-size:12px">${fmt(c.points)} 分</span>
+              </div>
+              <div style="font-size:11.5px;color:var(--ink-2);line-height:1.7">${escapeHtml(c.description || '')}</div>
+            </div>`
+            )
+            .join('')}
+        </div>
+      </div>
+
+      <aside class="card">
+        <div class="card-head"><h2>计时规则</h2><span class="hint">${d.answers.length} 份答案</span></div>
+        <div class="prose">
+          <ul style="padding-left:18px;line-height:2">
+            <li>点「开始批改」后，第 1 份答案立刻出现并开始计时；</li>
+            <li>每份从出现到点「提交本份」的时钟时间就是该份用时；</li>
+            <li>按你平时的习惯批：读题 → 读答案 → 逐条对照 → 打分；</li>
+            <li>页面不会显示 AI 的分数，避免影响你的判断。</li>
+          </ul>
+          <p style="margin-top:12px;color:var(--ink-3);font-size:11.5px">提醒：中途别去做别的事，否则计时会偏长。${prev ? `<br>上一次记录：${escapeHtml(prev.reviewer)}，平均 ${fmt(prev.avgSeconds, 1)} 秒/份（${prev.count} 份，${new Date(prev.recordedAt).toLocaleString('zh-CN', { hour12: false })}）` : ''}</p>
+        </div>
+        <label class="field" style="margin-top:16px">
+          <span>评阅人署名（可留空）</span>
+          <input id="tmReviewer" placeholder="例：张三" />
+        </label>
+        <button class="btn primary" id="tmStart" style="width:100%;margin-top:4px">开始批改 · 共 ${d.answers.length} 份</button>
+      </aside>
+    </div>`;
+
+  $('#tmStart').addEventListener('click', () => {
+    timerState.reviewer = ($('#tmReviewer').value || '').trim();
+    Object.assign(timerState, { phase: 'running', index: 0, perAnswer: {}, scores: {}, notes: {}, saved: null });
+    renderTimer();
+  });
+}
+
+function renderTimerRunning(box, d) {
+  const item = d.answers[timerState.index];
+  if (!item) return;
+  const q = d.question;
+
+  box.innerHTML = `
+    <div class="card">
+      <div class="card-head">
+        <h2>第 ${timerState.index + 1} / ${d.answers.length} 份 · ${escapeHtml(item.studentName)}</h2>
+        <div style="display:flex;align-items:center;gap:14px">
+          <span class="tm-clock" id="tmClock">0.0</span>
+          <span class="hint">秒</span>
+        </div>
+      </div>
+
+      <div class="answer-paper" style="max-height:320px;overflow:auto;white-space:pre-wrap">${escapeHtml(item.answer)}</div>
+
+      <div class="confirm-row" style="margin-top:18px">
+        <label class="field score">
+          <span>你给几分（0 ~ ${fmt(q.maxScore)}）</span>
+          <input id="tmScore" type="number" min="0" max="${q.maxScore}" step="0.5" placeholder="0" autofocus />
+        </label>
+        <label class="field note">
+          <span>一句话理由（可留空）</span>
+          <input id="tmNote" placeholder="例：低温机理说反了，扣分" />
+        </label>
+        <button class="btn primary" id="tmNext" style="height:38px">提交本份</button>
+      </div>
+
+      <div class="confirm-actions">
+        <span class="hint">已记录 ${Object.keys(timerState.perAnswer).length} 份 · 别在中间停下去做别的事</span>
+        <button class="btn quiet" id="tmAbort">放弃本次</button>
+      </div>
+    </div>`;
+
+  timerState.startedAt = Date.now();
+  stopTick();
+  const clock = $('#tmClock');
+  timerState.tick = setInterval(() => {
+    if (!clock) return stopTick();
+    clock.textContent = ((Date.now() - timerState.startedAt) / 1000).toFixed(1);
+  }, 100);
+
+  const next = () => {
+    const raw = $('#tmScore').value.trim();
+    const v = Number(raw);
+    if (raw === '' || !Number.isFinite(v) || v < 0 || v > q.maxScore) {
+      toast(`请输入 0 ~ ${fmt(q.maxScore)} 之间的分数`);
+      $('#tmScore').focus();
+      return;
+    }
+    const sec = (Date.now() - timerState.startedAt) / 1000;
+    timerState.perAnswer[item.tag] = Math.round(sec * 10) / 10;
+    timerState.scores[item.tag] = Math.round(v * 2) / 2;
+    const note = $('#tmNote').value.trim();
+    if (note) timerState.notes[item.tag] = note;
+
+    stopTick();
+    timerState.index += 1;
+    if (timerState.index >= d.answers.length) timerState.phase = 'done';
+    renderTimer();
+  };
+
+  $('#tmNext').addEventListener('click', next);
+  $('#tmScore').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') next();
+  });
+  $('#tmNote').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') next();
+  });
+  $('#tmAbort').addEventListener('click', () => {
+    stopTick();
+    timerState.phase = 'intro';
+    renderTimer();
+  });
+  $('#tmScore').focus();
+}
+
+async function saveTiming() {
+  timerState.saving = true;
+  renderTimer();
+  try {
+    const res = await api('/api/human-timing', {
+      method: 'POST',
+      body: {
+        reviewer: timerState.reviewer,
+        perAnswer: timerState.perAnswer,
+        scores: timerState.scores,
+        notes: timerState.notes,
+      },
+    });
+    timerState.saved = res;
+    toast('已写入评测报告');
+  } catch (err) {
+    toast(err.message);
+  } finally {
+    timerState.saving = false;
+    renderTimer();
+  }
 }
 
 init();

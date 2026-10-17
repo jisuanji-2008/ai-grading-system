@@ -650,6 +650,18 @@ select { appearance: none; background-image: url("data:image/svg+xml;utf8,<svg x
   .eval-metrics { grid-template-columns: repeat(2, 1fr); }
   .chart-grid { grid-template-columns: 1fr; }
 }
+/* ── 人工计时 ─────────────────────────────── */
+.tm-clock {
+  font-family: var(--mono);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  min-width: 72px;
+  text-align: right;
+}
+
 @media (max-width: 860px) {
   .app { display: block; }
   .rail {

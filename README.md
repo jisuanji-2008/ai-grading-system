@@ -87,8 +87,13 @@ Prompt（`server/grader.js`）的几条关键设计，决定了它"打得像人"
 ```bash
 npm run check    # 先体检：真实调用一次模型，确认 Key / 模型 / 网络都通
 npm run eval     # 端到端评测：起服务 → 建题 → 6 份答案 → eval/results.json + eval/report.md
-npm run timer    # 人工计时：逐份显示答案，记录你打分的实际用时（约 5 分钟）
-npm run report   # 人工计时完成后，只重算报告，不重新调用模型
+```
+
+人工基准的用时可以直接在网页里量：启动服务后打开 **「人工计时」页**（`#/timer`），逐份批改 6 份答案、自动计时，提交后服务端会写入 `eval/human-timing.json` 并**自动重算评测报告**（不重新调用模型）。也可以用命令行版：
+
+```bash
+npm run timer    # 命令行版人工计时（与网页版等价）
+npm run report   # 命令行版计时完成后，只重算报告
 ```
 
 ## 界面
