@@ -132,6 +132,15 @@ npm run report   # 命令行版计时完成后，只重算报告
 - 免费档模型（如 glm-4-flash）判分明显偏松且会编造依据，正式使用建议 glm-4-air 及以上；
 - 模型偶发对"表述不同但意思正确"的答案偏严，需要教师在批改台修正。
 
+## 团队分工
+
+| 成员 | 负责 |
+| --- | --- |
+| **崔鹏宇** | 制作：判分引擎与 Prompt 迭代、证据校验、后端接口、五个页面的前端、评测与计时脚本 |
+| **付禹棋** | 解说：演示录屏、人工基准的 6 份逐条打分、评测数据的解读与汇报、测试反馈 |
+
+详见 [docs/team.md](docs/team.md)；五条评审标准对应的证据索引见 [docs/review-checklist.md](docs/review-checklist.md)。
+
 ## 演示
 
 - 3 分钟录屏脚本见 [docs/demo-script.md](docs/demo-script.md)；
