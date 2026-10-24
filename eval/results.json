@@ -112,8 +112,7 @@
           "reason": "正确说明低温对酶活性的影响"
         }
       ],
-      "warnings": [],
-      "humanSeconds": 12.7
+      "warnings": []
     },
     {
       "tag": "A2",
@@ -183,8 +182,7 @@
           "reason": "提到低温抑制酶活性，但未明确说明空间结构未破坏"
         }
       ],
-      "warnings": [],
-      "humanSeconds": 3.6
+      "warnings": []
     },
     {
       "tag": "A3",
@@ -254,8 +252,7 @@
           "reason": "未提及低温对酶活性的影响"
         }
       ],
-      "warnings": [],
-      "humanSeconds": 5.9
+      "warnings": []
     },
     {
       "tag": "A4",
@@ -325,8 +322,7 @@
           "reason": "提到低温抑制酶活性，暗示可恢复"
         }
       ],
-      "warnings": [],
-      "humanSeconds": 5.8
+      "warnings": []
     },
     {
       "tag": "A5",
@@ -396,8 +392,7 @@
           "reason": "将高温低温影响说反"
         }
       ],
-      "warnings": [],
-      "humanSeconds": 4.6
+      "warnings": []
     },
     {
       "tag": "A6",
@@ -467,8 +462,7 @@
           "reason": "未提及低温对酶的影响"
         }
       ],
-      "warnings": [],
-      "humanSeconds": 2.7
+      "warnings": []
     }
   ],
   "metrics": {
@@ -484,13 +478,10 @@
     "avgAiLatencyMs": 3224,
     "medianAiLatencyMs": 3627,
     "totalAiMs": 19343,
-    "avgHumanSeconds": 5.9,
-    "speedup": 1.8,
+    "avgHumanSeconds": null,
+    "speedup": null,
     "criterionMae": 0.2,
     "criterionCount": 30
   },
-  "humanTiming": {
-    "reviewer": "未署名",
-    "recordedAt": "2026-10-20T03:52:36.645Z"
-  }
+  "humanTiming": null
 }
